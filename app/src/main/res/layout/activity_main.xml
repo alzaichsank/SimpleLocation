@@ -53,4 +53,67 @@
         android:textColor="#ffffff"
         android:background="@color/colorPrimary"
         android:textSize="@dimen/_11sdp" />
+    <TextView
+        android:id="@+id/titleDistance"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/btn_check"
+        android:gravity="center"
+        android:textColor="@color/colorPrimary"
+        android:textSize="@dimen/_14ssp"
+        android:textStyle="bold"
+        android:text="For Check Range from 2 point"/>
+
+    <TextView
+        android:id="@+id/latitude_target"
+        android:layout_below="@+id/titleDistance"
+        android:layout_marginTop="@dimen/_10sdp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Latitude Target:"
+        android:textSize="15sp" />
+    <EditText
+        android:id="@+id/input_latitude"
+        android:layout_width="@dimen/_120sdp"
+        android:inputType="number"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/latitude_target"
+        android:layout_marginLeft="15dp"
+        android:hint="Please input latitude"
+        android:layout_toRightOf="@+id/latitude_target"
+        android:textSize="15sp" />
+    <TextView
+        android:id="@+id/longitude_target"
+        android:layout_below="@+id/latitude_target"
+        android:layout_marginTop="@dimen/_10sdp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Longitude Target:"
+        android:textSize="15sp" />
+    <EditText
+        android:id="@+id/input_longitude"
+        android:inputType="number"
+        android:layout_width="@dimen/_120sdp"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/longitude_target"
+        android:layout_marginLeft="5dp"
+        android:hint="Please input longitude"
+        android:layout_toRightOf="@+id/longitude_target"
+        android:textSize="15sp" />
+
+
+    <android.support.v7.widget.AppCompatButton
+        android:id="@+id/btn_check_distance"
+        android:padding="@dimen/_10sdp"
+        android:layout_margin="@dimen/_10sdp"
+        android:layout_below="@+id/longitude_target"
+        android:layout_width="@dimen/_120sdp"
+        android:layout_centerHorizontal="true"
+        android:layout_height="wrap_content"
+        android:text="Check Distance"
+        android:textAllCaps="true"
+        android:textColor="#ffffff"
+        android:background="@color/colorPrimary"
+        android:textSize="@dimen/_11sdp" />
+
 </RelativeLayout>
