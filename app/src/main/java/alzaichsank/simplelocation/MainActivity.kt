@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationManager
+import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.support.multidex.MultiDex
@@ -40,6 +41,8 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks, G
     lateinit var locationManager: LocationManager
 
     private var GpsStatus : Boolean? = false
+    private var NetworkStatus : Boolean? = false
+    private var OnClickButton : Boolean? = false
 
     private var latitude: Double = 0.toDouble()
     private var longitude:Double = 0.toDouble()
@@ -64,12 +67,10 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks, G
 
         mLocationManager = this.getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
-//        checkLocation()
-        checkLocationPermission()
-        go_location()
+
         btn_check.setOnClickListener{
-//            checkLocation()
-            go_location()
+            OnClickButton = true
+            checkPermissionActivity()
         }
 
     }
@@ -100,12 +101,17 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks, G
     }
 
     override fun onLocationChanged(location: Location) {
+        if(location.latitude!=latitude || location.longitude != longitude){
+
+            latitude = location.latitude
+            longitude = location.longitude
+            var msg = "Updated Location: Latitude " + latitude.toString() + longitude.toString()
+            txt_latitude.text = latitude.toString()
+            txt_longitude.text = longitude.toString()
+            Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+        }
 
 
-        var msg = "Updated Location: Latitude " + location.longitude.toString() + location.longitude
-        txt_latitude.text = ""+location.latitude
-        txt_longitude.text = ""+location.longitude
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
 
 
     }
@@ -118,7 +124,8 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks, G
         mLocationRequest.priority = LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY
 //        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {/**/
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // Permission is not granted
+            checkPermissionActivity()
+
 
 
         }else{
@@ -131,9 +138,14 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks, G
                         // Got last known location. In some rare situations this can be null.
                         if (location != null) {
                             // Logic to handle location object
+
+
                             mLocation = location
-                            txt_latitude.text = "" + mLocation.latitude
-                            txt_longitude.text = "" + mLocation.longitude
+                            latitude = mLocation.latitude
+                            longitude = mLocation.longitude
+
+                            txt_latitude.text = latitude.toString()
+                            txt_longitude.text = longitude.toString()
                         }
                     }
 
@@ -141,20 +153,15 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks, G
 
 
     }
-    private fun checkLocation(): Boolean {
-        if(!isLocationEnabled()) {
-            showAlert()
-            Toast.makeText(this, "kosong", Toast.LENGTH_SHORT).show()
-        }else{
-            Toast.makeText(this, "ada lokasi", Toast.LENGTH_SHORT).show()
-        }
-        return isLocationEnabled()
-    }
+
 
     fun go_location(){
         CheckGpsStatus()
-        if (GpsStatus == true) {
-            Toast.makeText(this, "lokasi nyala", Toast.LENGTH_SHORT).show()
+        if (GpsStatus!! && NetworkStatus!!) {
+            if (mGoogleApiClient != null) {
+                mGoogleApiClient.connect()
+            }
+//            Toast.makeText(this, "lokasi nyala", Toast.LENGTH_SHORT).show()
         }else{
             showAlert()
         }
@@ -164,27 +171,22 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks, G
     fun CheckGpsStatus() {
 
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        GpsStatus = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+        GpsStatus = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+        NetworkStatus=  locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
 
     }
 
 
-    private fun isLocationEnabled(): Boolean {
-        locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
-    }
 
     private fun showAlert() {
         val dialog = AlertDialog.Builder(this)
         dialog.setTitle("Enable Location")
                 .setMessage("Your Locations Settings is set to 'Off'.\nPlease Enable Location to " + "use this app")
                 .setPositiveButton("Check Location") { _, _ ->
-//                    val myIntent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-//                    startActivity(myIntent)
                     startActivityForResult(Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS), 0)
                 }
                 .setNegativeButton("Cancel") { _, _ ->
-                    finish()
+                    Toast.makeText(this, "Please enable your location", Toast.LENGTH_SHORT).show()
                 }
         dialog.show()
     }
@@ -197,7 +199,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks, G
                 .setInterval(UPDATE_INTERVAL)
                 .setFastestInterval(FASTEST_INTERVAL)
         // Request location updates
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ) {
             return
         }
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,
@@ -207,46 +209,75 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks, G
     //permission
     val MY_PERMISSIONS_REQUEST_LOCATION = 99
 
-    fun checkLocationPermission(): Boolean {
-        if (ContextCompat.checkSelfPermission(this,
-                        android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                            android.Manifest.permission.ACCESS_FINE_LOCATION)) {
+    fun checkPermissionActivity(){
+        if (Build.VERSION.SDK_INT >= 23) {
+            Log.d("LOG TAG HASIL", "IN IF Build.VERSION.SDK_INT >= 23")
+
+            if (!checkLocationPermission()) {
+                Log.d("LOG TAG HASIL", "IN IF hasPermissions")
                 ActivityCompat.requestPermissions(this,
                         arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION),
                         MY_PERMISSIONS_REQUEST_LOCATION)
             } else {
-                ActivityCompat.requestPermissions(this,
-                        arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION),
-                        MY_PERMISSIONS_REQUEST_LOCATION)
+                Log.d("LOG TAG HASIL", "IN ELSE hasPermissions")
+                go_location()
             }
-            return false
         } else {
-            return true
+            Log.d("LOG TAG HASIL", "IN ELSE  Build.VERSION.SDK_INT >= 23")
+            go_location()
         }
     }
 
+    fun checkLocationPermission(): Boolean {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && this@MainActivity != null && android.Manifest.permission.ACCESS_FINE_LOCATION != null) {
+            for (permission in android.Manifest.permission.ACCESS_FINE_LOCATION) {
+                if (ActivityCompat.checkSelfPermission(this@MainActivity, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    return false
+                }
+            }
+        }
+        return true
+    }
+
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        resultPermission(requestCode,grantResults)
+
+    }
+
+    private fun resultPermission(requestCode: Int, grantResults: IntArray) {
         when (requestCode) {
             MY_PERMISSIONS_REQUEST_LOCATION -> {
                 if (grantResults.size > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
-                    // Izin diberikan.
-                    if (ContextCompat.checkSelfPermission(this,
-                                    android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-
-//                        if (mGoogleApiClient == null) {
-//
-//                        }
-//                        go_location()
-                    }
+                    mGoogleApiClient = GoogleApiClient.Builder(this)
+                            .addConnectionCallbacks(this)
+                            .addOnConnectionFailedListener(this)
+                            .addApi(LocationServices.API)
+                            .build()
+                    go_location()
 
                 } else {
-
-                    // Izin ditolak.
-                    Toast.makeText(this, "permission denied", Toast.LENGTH_LONG).show()
+                    
+                    if(OnClickButton!!){
+                    val alert = android.support.v7.app.AlertDialog.Builder(this@MainActivity)
+                    alert.setTitle("Warning!")
+                    alert.setMessage("Please give permission!")
+                    alert.setCancelable(false)
+                    alert.setPositiveButton("Yes",
+                            object : DialogInterface.OnClickListener {
+                                override fun onClick(dialog: DialogInterface, which: Int) {
+                                    // TODO Auto-generated method stub
+                                    this@MainActivity.finish()
+                                    this@MainActivity.startActivity(this@MainActivity.intent)
+                                }
+                            })
+                    alert.show()
+                    }else{
+                        Log.d("LOG TAG HASIL", "PERMISSIONS Denied")
+                        Toast.makeText(this, "permission denied", Toast.LENGTH_LONG).show()
+                    }
                 }
-                return
             }
         }
     }
