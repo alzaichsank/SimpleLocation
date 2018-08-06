@@ -47,6 +47,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks, G
 
 
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -64,10 +65,19 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks, G
 
         mLocationManager = this.getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
-        //* dot his when button hit *//
+        //* do this when button hit for get location*//
         btn_check.setOnClickListener{
             OnClickButton = true
             checkPermissionActivity()
+        }
+        //* do this when button hit for get distance *//
+        btn_check_distance.setOnClickListener {
+            if (latitude!!.toString().isNotEmpty() && longitude!!.toString().isNotEmpty()){
+                calculationDistance()
+            }else{
+                checkPermissionActivity()
+            }
+
         }
 
     }
@@ -267,6 +277,25 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks, G
             }
         }
 
+    }
+
+    //*distance logic *//
+
+    fun calculationDistance(){
+
+        val latitudeTarget = input_latitude.text.toString()
+        val longitudeTarget = input_longitude.text.toString()
+        val distance = FloatArray(2)
+        if(latitudeTarget.isNotEmpty()&&longitudeTarget.isNotEmpty()) {
+
+            Location.distanceBetween(latitude, longitude, latitudeTarget.toDouble(),
+                    longitudeTarget.toDouble(), distance)
+
+            resultDistance.text= "${distance[0]} Meter"
+
+        }else{
+            Toast.makeText(this, "latitude target or longitude target is empty", Toast.LENGTH_LONG).show()
+        }
     }
 
 

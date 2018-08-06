@@ -75,7 +75,7 @@
     <EditText
         android:id="@+id/input_latitude"
         android:layout_width="@dimen/_120sdp"
-        android:inputType="number"
+        android:inputType="text"
         android:layout_height="wrap_content"
         android:layout_alignBaseline="@+id/latitude_target"
         android:layout_marginLeft="15dp"
@@ -92,7 +92,7 @@
         android:textSize="15sp" />
     <EditText
         android:id="@+id/input_longitude"
-        android:inputType="number"
+        android:inputType="text"
         android:layout_width="@dimen/_120sdp"
         android:layout_height="wrap_content"
         android:layout_alignBaseline="@+id/longitude_target"
@@ -115,5 +115,17 @@
         android:textColor="#ffffff"
         android:background="@color/colorPrimary"
         android:textSize="@dimen/_11sdp" />
+
+    <TextView
+        android:id="@+id/resultDistance"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/btn_check_distance"
+        android:gravity="center"
+        android:textColor="@color/colorPrimary"
+        android:textSize="@dimen/_10ssp"
+        android:textStyle="bold"
+        android:text="-"/>
+
 
 </RelativeLayout>
