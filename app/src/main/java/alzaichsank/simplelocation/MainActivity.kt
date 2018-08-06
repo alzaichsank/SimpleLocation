@@ -67,7 +67,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks, G
 
         mLocationManager = this.getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
-
+        //* dot his when button hit *//
         btn_check.setOnClickListener{
             OnClickButton = true
             checkPermissionActivity()
@@ -122,12 +122,8 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks, G
         mLocationRequest.interval = 1000
         mLocationRequest.fastestInterval = 1000
         mLocationRequest.priority = LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY
-//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {/**/
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             checkPermissionActivity()
-
-
-
         }else{
             startLocationUpdates()
 
@@ -138,7 +134,6 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks, G
                         // Got last known location. In some rare situations this can be null.
                         if (location != null) {
                             // Logic to handle location object
-
 
                             mLocation = location
                             latitude = mLocation.latitude
@@ -161,7 +156,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks, G
             if (mGoogleApiClient != null) {
                 mGoogleApiClient.connect()
             }
-//            Toast.makeText(this, "lokasi nyala", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "updated", Toast.LENGTH_SHORT).show()
         }else{
             showAlert()
         }
@@ -206,7 +201,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks, G
                 mLocationRequest, this)
     }
 
-    //permission
+    //permission check and sdk check
     val MY_PERMISSIONS_REQUEST_LOCATION = 99
 
     fun checkPermissionActivity(){
@@ -238,14 +233,8 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks, G
         }
         return true
     }
-
+    //permission result
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        resultPermission(requestCode,grantResults)
-
-    }
-
-    private fun resultPermission(requestCode: Int, grantResults: IntArray) {
         when (requestCode) {
             MY_PERMISSIONS_REQUEST_LOCATION -> {
                 if (grantResults.size > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -258,21 +247,21 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks, G
                     go_location()
 
                 } else {
-                    
+
                     if(OnClickButton!!){
-                    val alert = android.support.v7.app.AlertDialog.Builder(this@MainActivity)
-                    alert.setTitle("Warning!")
-                    alert.setMessage("Please give permission!")
-                    alert.setCancelable(false)
-                    alert.setPositiveButton("Yes",
-                            object : DialogInterface.OnClickListener {
-                                override fun onClick(dialog: DialogInterface, which: Int) {
-                                    // TODO Auto-generated method stub
-                                    this@MainActivity.finish()
-                                    this@MainActivity.startActivity(this@MainActivity.intent)
-                                }
-                            })
-                    alert.show()
+                        val alert = android.support.v7.app.AlertDialog.Builder(this@MainActivity)
+                        alert.setTitle("Warning!")
+                        alert.setMessage("Please give permission!")
+                        alert.setCancelable(false)
+                        alert.setPositiveButton("Yes",
+                                object : DialogInterface.OnClickListener {
+                                    override fun onClick(dialog: DialogInterface, which: Int) {
+                                        // TODO Auto-generated method stub
+                                        this@MainActivity.finish()
+                                        this@MainActivity.startActivity(this@MainActivity.intent)
+                                    }
+                                })
+                        alert.show()
                     }else{
                         Log.d("LOG TAG HASIL", "PERMISSIONS Denied")
                         Toast.makeText(this, "permission denied", Toast.LENGTH_LONG).show()
@@ -280,5 +269,8 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks, G
                 }
             }
         }
+
     }
+
+
 }
