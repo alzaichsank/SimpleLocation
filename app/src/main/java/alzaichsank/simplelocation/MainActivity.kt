@@ -1,3 +1,4 @@
+@file:Suppress("DEPRECATION")
 package alzaichsank.simplelocation
 
 import android.Manifest
@@ -21,6 +22,7 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import kotlinx.android.synthetic.main.activity_main.*
+
 
 class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener {
 
@@ -116,6 +118,9 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks, G
             txt_latitude.text = latitude.toString()
             txt_longitude.text = longitude.toString()
             Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+            if (mGoogleApiClient != null) {
+                LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this)
+            }
         }
 
 
@@ -160,9 +165,15 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks, G
     fun go_location(){
         CheckGpsStatus()
         if (GpsStatus!! && NetworkStatus!!) {
+            mGoogleApiClient = GoogleApiClient.Builder(this)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .addApi(LocationServices.API)
+                    .build()
             if (mGoogleApiClient != null) {
                 mGoogleApiClient.connect()
             }
+
             Toast.makeText(this, "updated", Toast.LENGTH_SHORT).show()
         }else{
             showAlert()
@@ -245,12 +256,6 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks, G
         when (requestCode) {
             MY_PERMISSIONS_REQUEST_LOCATION -> {
                 if (grantResults.size > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                    mGoogleApiClient = GoogleApiClient.Builder(this)
-                            .addConnectionCallbacks(this)
-                            .addOnConnectionFailedListener(this)
-                            .addApi(LocationServices.API)
-                            .build()
                     go_location()
 
                 } else {
@@ -260,14 +265,12 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks, G
                         alert.setTitle("Warning!")
                         alert.setMessage("Please give permission!")
                         alert.setCancelable(false)
-                        alert.setPositiveButton("Yes",
-                                object : DialogInterface.OnClickListener {
-                                    override fun onClick(dialog: DialogInterface, which: Int) {
-                                        // TODO Auto-generated method stub
-                                        this@MainActivity.finish()
-                                        this@MainActivity.startActivity(this@MainActivity.intent)
-                                    }
-                                })
+                        alert.setPositiveButton("Yes"
+                        ) { dialog, which ->
+                            // TODO Auto-generated method stub
+                            this@MainActivity.finish()
+                            this@MainActivity.startActivity(this@MainActivity.intent)
+                        }
                         alert.show()
                     }else{
                         Log.d("LOG TAG HASIL", "PERMISSIONS Denied")
@@ -291,7 +294,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks, G
             Location.distanceBetween(latitude, longitude, latitudeTarget.toDouble(),
                     longitudeTarget.toDouble(), distance)
 
-            resultDistance.text= "${distance[0]} Meter"
+            resultDistance.text= "${distance[0].toInt()} Meter"
 
         }else{
             Toast.makeText(this, "latitude target or longitude target is empty", Toast.LENGTH_LONG).show()
