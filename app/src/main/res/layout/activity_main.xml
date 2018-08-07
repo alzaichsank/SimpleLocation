@@ -74,8 +74,10 @@
         android:textSize="15sp" />
     <EditText
         android:id="@+id/input_latitude"
-        android:layout_width="@dimen/_120sdp"
+        android:layout_width="@dimen/_160sdp"
         android:inputType="text"
+        android:digits="0123456789.-"
+        android:maxLines="1"
         android:layout_height="wrap_content"
         android:layout_alignBaseline="@+id/latitude_target"
         android:layout_marginLeft="15dp"
@@ -93,7 +95,9 @@
     <EditText
         android:id="@+id/input_longitude"
         android:inputType="text"
-        android:layout_width="@dimen/_120sdp"
+        android:digits="0123456789.-"
+        android:maxLines="1"
+        android:layout_width="@dimen/_160sdp"
         android:layout_height="wrap_content"
         android:layout_alignBaseline="@+id/longitude_target"
         android:layout_marginLeft="5dp"

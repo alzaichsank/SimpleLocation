@@ -47,6 +47,9 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks, G
     private var latitude: Double = 0.toDouble()
     private var longitude:Double = 0.toDouble()
 
+    //filter special caracter
+
+
 
 
 
@@ -309,15 +312,21 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks, G
         val latitudeTarget = input_latitude.text.toString()
         val longitudeTarget = input_longitude.text.toString()
         val distance = FloatArray(2)
-        if(latitudeTarget.isNotEmpty()&&longitudeTarget.isNotEmpty()) {
 
-            Location.distanceBetween(latitude, longitude, latitudeTarget.toDouble(),
-                    longitudeTarget.toDouble(), distance)
 
-            resultDistance.text= "${distance[0].toInt()} Meter"
+        try{
+            if (latitudeTarget.isNotEmpty() && longitudeTarget.isNotEmpty()) {
 
-        }else{
-            Toast.makeText(this, "latitude target or longitude target is empty", Toast.LENGTH_LONG).show()
+                Location.distanceBetween(latitude, longitude, latitudeTarget.toDouble(),
+                        longitudeTarget.toDouble(), distance)
+
+                resultDistance.text = "${distance[0].toInt()} Meter"
+
+            } else {
+                Toast.makeText(this, "latitude target or longitude target is empty", Toast.LENGTH_LONG).show()
+            }
+        } catch (e: IllegalStateException) {
+            Toast.makeText(this, e.toString(), Toast.LENGTH_LONG).show()
         }
     }
 
