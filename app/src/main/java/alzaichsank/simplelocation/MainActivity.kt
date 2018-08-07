@@ -42,6 +42,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks, G
     private var GpsStatus : Boolean? = false
     private var NetworkStatus : Boolean? = false
     private var OnClickButton : Boolean? = false
+    private var OnClickButtonUpdate : Boolean? = false
 
     private var latitude: Double = 0.toDouble()
     private var longitude:Double = 0.toDouble()
@@ -110,18 +111,27 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks, G
     }
 
     override fun onLocationChanged(location: Location) {
-        if(location.latitude!=latitude || location.longitude != longitude){
+        if(OnClickButtonUpdate!!) {
 
-            latitude = location.latitude
-            longitude = location.longitude
-            var msg = "Updated Location: Latitude " + latitude.toString() + longitude.toString()
-            txt_latitude.text = latitude.toString()
-            txt_longitude.text = longitude.toString()
-            Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
-            if (mGoogleApiClient != null) {
-                LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this)
+            if (location.latitude != latitude || location.longitude != longitude) {
+
+                latitude = location.latitude
+                longitude = location.longitude
+                var msg = "Updated Location: Latitude " + latitude.toString() + longitude.toString()
+                txt_latitude.text = latitude.toString()
+                txt_longitude.text = longitude.toString()
+                Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+                try {
+                    if (mGoogleApiClient != null) {
+                        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this)
+                    }
+                }catch (e: IllegalStateException){
+                    Toast.makeText(this, e.toString(), Toast.LENGTH_SHORT).show()
+                }
             }
+            OnClickButtonUpdate=false
         }
+
 
 
 
@@ -165,11 +175,9 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks, G
     fun go_location(){
         CheckGpsStatus()
         if (GpsStatus!! && NetworkStatus!!) {
-            mGoogleApiClient = GoogleApiClient.Builder(this)
-                    .addConnectionCallbacks(this)
-                    .addOnConnectionFailedListener(this)
-                    .addApi(LocationServices.API)
-                    .build()
+            if(!OnClickButtonUpdate!!) {
+                buildConection()
+            }
             if (mGoogleApiClient != null) {
                 mGoogleApiClient.connect()
             }
@@ -233,10 +241,12 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks, G
                         MY_PERMISSIONS_REQUEST_LOCATION)
             } else {
                 Log.d("LOG TAG HASIL", "IN ELSE hasPermissions")
+
                 go_location()
             }
         } else {
             Log.d("LOG TAG HASIL", "IN ELSE  Build.VERSION.SDK_INT >= 23")
+            buildConection()
             go_location()
         }
     }
@@ -256,6 +266,7 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks, G
         when (requestCode) {
             MY_PERMISSIONS_REQUEST_LOCATION -> {
                 if (grantResults.size > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    buildConection()
                     go_location()
 
                 } else {
@@ -280,6 +291,15 @@ class MainActivity : AppCompatActivity(), GoogleApiClient.ConnectionCallbacks, G
             }
         }
 
+    }
+
+    fun buildConection(){
+        mGoogleApiClient = GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build()
+        OnClickButtonUpdate=true
     }
 
     //*distance logic *//
